@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Umiya Bachat Mandal</string>
+    <string name="title_activity_main">Umiya Bachat Mandal</string>
+    <string name="package_name">com.umiya.bachat.mandal</string>
+    <string name="custom_url_scheme">com.umiya.bachat.mandal</string>
+</resources>
