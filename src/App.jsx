@@ -9,7 +9,6 @@ import Loans from './pages/admin/Loans';
 import Dividends from './pages/admin/Dividends';
 import Reports from './pages/admin/Reports';
 import Settings from './pages/admin/Settings';
-import MemberDashboard from './pages/member/MemberDashboard';
 
 function App() {
   const { currentUser } = useStore();
@@ -25,10 +24,6 @@ function App() {
         <HashRouterComponent />
       </AdminLayout>
     );
-  }
-
-  if (currentUser.mode === 'member') {
-    return <MemberDashboard />;
   }
 
   return null;
