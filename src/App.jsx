@@ -9,6 +9,8 @@ import Loans from './pages/admin/Loans';
 import Dividends from './pages/admin/Dividends';
 import Reports from './pages/admin/Reports';
 import Settings from './pages/admin/Settings';
+import MemberAccess from './pages/admin/MemberAccess';
+import MemberDashboard from './pages/member/MemberDashboard';
 
 function App() {
   const { currentUser } = useStore();
@@ -24,6 +26,10 @@ function App() {
         <HashRouterComponent />
       </AdminLayout>
     );
+  }
+
+  if (currentUser.mode === 'member') {
+    return <MemberDashboard />;
   }
 
   return null;
@@ -44,6 +50,7 @@ const HashRouterComponent = () => {
     case '#/collections': return <Collections />;
     case '#/loans': return <Loans />;
     case '#/dividends': return <Dividends />;
+    case '#/access': return <MemberAccess />;
     case '#/reports': return <Reports />;
     case '#/settings': return <Settings />;
     case '#/dashboard':

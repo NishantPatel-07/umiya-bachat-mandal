@@ -8,7 +8,7 @@ import { useStore } from '../../store';
  * Total Interest = Principal × Rate × Duration
  * Monthly Installment = (Principal + Total Interest) ÷ Duration
  */
-const calcFlatEMI = (principal, rate, duration) => {
+export const calcFlatEMI = (principal, rate, duration) => {
   const p = parseFloat(principal) || 0;
   const r = parseFloat(rate) / 100;
   const n = parseInt(duration) || 1;
@@ -24,7 +24,7 @@ const calcFlatEMI = (principal, rate, duration) => {
  * Months 1 to (n-1): pay only interest
  * Final Month: pay Principal + interest
  */
-const calcInterestOnly = (principal, rate, duration) => {
+export const calcInterestOnly = (principal, rate, duration) => {
   const p = parseFloat(principal) || 0;
   const r = parseFloat(rate) / 100;
   const n = parseInt(duration) || 1;
@@ -192,6 +192,202 @@ const RepayModal = ({ loan, onClose, onSave }) => {
         <button className="btn-success" style={{ width: '100%' }} onClick={handleSave}>
           ✓ Save Repayment
         </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Standalone Calculator Component ──────────────────────────────────────────
+
+const StandaloneCalculator = () => {
+  const [calcAmount, setCalcAmount] = useState('100000');
+  const [calcRate, setCalcRate] = useState('1.5');
+  const [calcDuration, setCalcDuration] = useState('12');
+  const [viewScheduleType, setViewScheduleType] = useState('FLAT_EMI'); // 'FLAT_EMI' | 'INTEREST_ONLY'
+
+  const amt = parseFloat(calcAmount) || 0;
+  const rateVal = parseFloat(calcRate) || 0;
+  const dur = parseInt(calcDuration) || 1;
+
+  const flatRes = calcFlatEMI(amt, rateVal, dur);
+  const ioRes = calcInterestOnly(amt, rateVal, dur);
+
+  // Generate schedule rows
+  const scheduleRows = [];
+  if (viewScheduleType === 'FLAT_EMI') {
+    const interestPerMonth = Math.round(amt * (rateVal / 100));
+    const principalPerMonth = Math.round(flatRes.emi - interestPerMonth);
+    let remainingPrincipal = amt;
+
+    for (let i = 1; i <= dur; i++) {
+      remainingPrincipal -= principalPerMonth;
+      scheduleRows.push({
+        month: i,
+        emi: flatRes.emi,
+        principal: principalPerMonth,
+        interest: interestPerMonth,
+        balance: Math.max(0, remainingPrincipal)
+      });
+    }
+  } else {
+    const monthlyInterest = ioRes.monthlyInterest;
+    for (let i = 1; i <= dur; i++) {
+      const isLast = i === dur;
+      scheduleRows.push({
+        month: i,
+        emi: isLast ? amt + monthlyInterest : monthlyInterest,
+        principal: isLast ? amt : 0,
+        interest: monthlyInterest,
+        balance: isLast ? 0 : amt
+      });
+    }
+  }
+
+  return (
+    <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+      <div className="card mb-4" style={{ background: 'var(--primary-light)', border: '1px solid #fde047' }}>
+        <h3 style={{ color: 'var(--primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          🧮 Interactive Loan Calculator
+        </h3>
+        <p className="text-sm text-muted mb-4">
+          Enter parameters below to compare Flat Rate EMI vs Interest-Only options, and view full repayment schedules.
+        </p>
+
+        <div className="grid grid-cols-3 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '0.5rem' }}>
+          <div>
+            <label className="text-sm font-bold mb-1" style={{ display: 'block' }}>Principal Amount (₹)</label>
+            <input type="number" value={calcAmount} onChange={e => setCalcAmount(e.target.value)} style={{ background: '#fff' }} />
+          </div>
+          <div>
+            <label className="text-sm font-bold mb-1" style={{ display: 'block' }}>Interest Rate (%/month)</label>
+            <input type="number" step="0.1" value={calcRate} onChange={e => setCalcRate(e.target.value)} style={{ background: '#fff' }} />
+          </div>
+          <div>
+            <label className="text-sm font-bold mb-1" style={{ display: 'block' }}>Duration (Months)</label>
+            <input type="number" value={calcDuration} onChange={e => setCalcDuration(e.target.value)} style={{ background: '#fff' }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Comparison Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Flat Rate Card */}
+        <div className="card" style={{
+          border: '2px solid var(--primary)',
+          background: '#fff',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          margin: 0
+        }}>
+          <div>
+            <h4 style={{ color: 'var(--primary)', marginBottom: '0.75rem', fontWeight: '700' }}>Flat Rate EMI</h4>
+            <p className="text-sm text-muted mb-4">Equal monthly payments consisting of principal + interest.</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="flex justify-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.25rem' }}>
+              <span className="text-sm text-muted">Monthly Installment:</span>
+              <strong style={{ color: 'var(--primary)' }}>₹{flatRes.emi.toLocaleString('en-IN')}</strong>
+            </div>
+            <div className="flex justify-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.25rem' }}>
+              <span className="text-sm text-muted">Total Interest:</span>
+              <strong>₹{flatRes.totalInterest.toLocaleString('en-IN')}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted">Total Repayment:</span>
+              <strong>₹{flatRes.totalRepayment.toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* Interest Only Card */}
+        <div className="card" style={{
+          border: '2px solid #d97706',
+          background: '#fff',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          margin: 0
+        }}>
+          <div>
+            <h4 style={{ color: '#d97706', marginBottom: '0.75rem', fontWeight: '700' }}>Interest-Only (Bullet)</h4>
+            <p className="text-sm text-muted mb-4">Pay monthly interest only. Pay full principal back in the last month.</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="flex justify-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.25rem' }}>
+              <span className="text-sm text-muted">Monthly Interest:</span>
+              <strong style={{ color: '#d97706' }}>₹{ioRes.monthlyInterest.toLocaleString('en-IN')}</strong>
+            </div>
+            <div className="flex justify-between" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.25rem' }}>
+              <span className="text-sm text-muted">Total Interest:</span>
+              <strong>₹{ioRes.totalInterest.toLocaleString('en-IN')}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted">Final Bullet Payment:</span>
+              <strong>₹{ioRes.finalPayment.toLocaleString('en-IN')}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Amortization Schedule */}
+      <div className="card">
+        <div className="flex justify-between items-center mb-4">
+          <h3>Amortization Schedule</h3>
+          <div className="flex gap-2">
+            <button
+              className="btn-secondary"
+              style={{
+                minHeight: 'auto',
+                padding: '0.25rem 0.75rem',
+                background: viewScheduleType === 'FLAT_EMI' ? 'var(--primary)' : '',
+                color: viewScheduleType === 'FLAT_EMI' ? '#fff' : '',
+                borderColor: viewScheduleType === 'FLAT_EMI' ? 'var(--primary)' : ''
+              }}
+              onClick={() => setViewScheduleType('FLAT_EMI')}
+            >
+              Flat EMI
+            </button>
+            <button
+              className="btn-secondary"
+              style={{
+                minHeight: 'auto',
+                padding: '0.25rem 0.75rem',
+                background: viewScheduleType === 'INTEREST_ONLY' ? 'var(--primary)' : '',
+                color: viewScheduleType === 'INTEREST_ONLY' ? '#fff' : '',
+                borderColor: viewScheduleType === 'INTEREST_ONLY' ? 'var(--primary)' : ''
+              }}
+              onClick={() => setViewScheduleType('INTEREST_ONLY')}
+            >
+              Interest-Only
+            </button>
+          </div>
+        </div>
+
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Payment (₹)</th>
+                <th>Principal (₹)</th>
+                <th>Interest (₹)</th>
+                <th>Remaining Balance (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scheduleRows.map(row => (
+                <tr key={row.month}>
+                  <td>{row.month}</td>
+                  <td><strong>₹{row.emi.toLocaleString('en-IN')}</strong></td>
+                  <td>₹{row.principal.toLocaleString('en-IN')}</td>
+                  <td>₹{row.interest.toLocaleString('en-IN')}</td>
+                  <td>₹{row.balance.toLocaleString('en-IN')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -420,21 +616,25 @@ const Loans = () => {
       )}
 
       {/* ── Tabs ── */}
-      <div className="flex" style={{ borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
-        {['active', 'repaid'].map(tab => (
+      <div className="flex" style={{ borderBottom: '1px solid var(--border)', marginBottom: '1.5rem' }}>
+        {['active', 'repaid', 'calculator'].map(tab => (
           <button key={tab} type="button" onClick={() => setActiveTab(tab)} style={{
             flex: 1, background: 'none', borderRadius: 0,
             color: activeTab === tab ? 'var(--primary)' : 'var(--text-muted)',
             borderBottom: activeTab === tab ? '2px solid var(--primary)' : 'none',
-            textTransform: 'capitalize'
+            textTransform: 'capitalize',
+            padding: '0.75rem 0.5rem',
+            fontWeight: '600'
           }}>
-            {tab === 'active' ? `Active (${activeLoans.length})` : `Repaid (${repaidLoans.length})`}
+            {tab === 'active' ? `Active Loans (${activeLoans.length})` : tab === 'repaid' ? `Repaid (${repaidLoans.length})` : '🧮 Calculator'}
           </button>
         ))}
       </div>
 
-      {/* ── Loan Cards ── */}
-      {displayLoans.length === 0 ? (
+      {/* ── Content Area ── */}
+      {activeTab === 'calculator' ? (
+        <StandaloneCalculator />
+      ) : displayLoans.length === 0 ? (
         <div className="card text-center text-muted py-8">No {activeTab} loans found.</div>
       ) : (
         displayLoans.map(loan => {

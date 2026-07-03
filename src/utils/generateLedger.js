@@ -39,16 +39,27 @@ export const generateLedger = async (db, targetMonth = null) => {
     cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     cell.border = borderAll;
   });
+  const COL_WIDTHS = {
+    NUM: 6,
+    NAME: 30,
+    SHARES: 12,
+    SHARE_HATO: 12,
+    LOAN_HATO: 18,
+    HATO_10: 14,
+    HATO_20: 14,
+    UCHAK_VYAJ: 16,
+    TOTAL: 16
+  };
 
-  sheet.getColumn(1).width = 6;
-  sheet.getColumn(2).width = 30;
-  sheet.getColumn(3).width = 12;
-  sheet.getColumn(4).width = 12;
-  sheet.getColumn(5).width = 18;
-  sheet.getColumn(6).width = 14;
-  sheet.getColumn(7).width = 14;
-  sheet.getColumn(8).width = 16;
-  sheet.getColumn(9).width = 16;
+  sheet.getColumn(1).width = COL_WIDTHS.NUM;
+  sheet.getColumn(2).width = COL_WIDTHS.NAME;
+  sheet.getColumn(3).width = COL_WIDTHS.SHARES;
+  sheet.getColumn(4).width = COL_WIDTHS.SHARE_HATO;
+  sheet.getColumn(5).width = COL_WIDTHS.LOAN_HATO;
+  sheet.getColumn(6).width = COL_WIDTHS.HATO_10;
+  sheet.getColumn(7).width = COL_WIDTHS.HATO_20;
+  sheet.getColumn(8).width = COL_WIDTHS.UCHAK_VYAJ;
+  sheet.getColumn(9).width = COL_WIDTHS.TOTAL;
 
   let shareSub1 = 0, shareValSub1 = 0;
   let shareSub2 = 0, shareValSub2 = 0;

@@ -176,15 +176,28 @@ input:focus, select:focus, textarea:focus {
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 800px;
   background: white;
   border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   display: flex;
-  justify-content: space-around;
-  padding: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  padding: 0.5rem 0.5rem;
   z-index: 50;
   box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
+}
+
+.bottom-nav::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari, Opera */
 }
 
 .nav-item {
@@ -195,7 +208,11 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.75rem;
   text-decoration: none;
   gap: 0.25rem;
-  padding: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  flex: 0 0 auto; /* Prevent shrinking so all icons fit nicely */
+  min-width: 68px; /* Give enough horizontal room for each label */
+  text-align: center;
+  transition: color 0.2s ease;
 }
 
 .nav-item.active {

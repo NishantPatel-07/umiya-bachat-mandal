@@ -6,6 +6,7 @@ const Members = () => {
   const { db, updateDb, addActivity } = useStore();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Form state
   const [name, setName] = useState('');
@@ -66,6 +67,13 @@ const Members = () => {
     }
   };
 
+  const sortedMembers = [...db.members].sort((a, b) => a.num - b.num);
+  const filteredMembers = sortedMembers.filter(m =>
+    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.num.toString().includes(searchQuery) ||
+    (m.phone && m.phone.includes(searchQuery))
+  );
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -109,6 +117,17 @@ const Members = () => {
         </div>
       )}
 
+      {/* Search & Filter */}
+      <div className="card mb-4" style={{ padding: '1rem' }}>
+        <input
+          type="text"
+          placeholder="Search members by name, number, or phone..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={{ width: '100%', margin: 0 }}
+        />
+      </div>
+
       <div className="table-container card">
         <table>
           <thead>
@@ -122,7 +141,7 @@ const Members = () => {
             </tr>
           </thead>
           <tbody>
-            {db.members.map(m => (
+            {filteredMembers.map(m => (
               <tr key={m.id}>
                 <td>{m.num}</td>
                 <td className="font-bold">{m.name}</td>
@@ -149,7 +168,7 @@ const Members = () => {
                 </td>
               </tr>
             ))}
-            {db.members.length === 0 && (
+            {filteredMembers.length === 0 && (
               <tr><td colSpan="6" className="text-center">No members found</td></tr>
             )}
           </tbody>
