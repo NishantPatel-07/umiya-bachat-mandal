@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 
 const MemberAccess = () => {
@@ -31,8 +31,8 @@ const MemberAccess = () => {
     try {
       // 1. Create a temporary client that doesn't persist session to avoid logging out the Admin
       const tempClient = createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY,
+        supabaseUrl,
+        supabaseAnonKey,
         {
           auth: {
             persistSession: false,
